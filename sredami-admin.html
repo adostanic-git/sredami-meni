@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Sredami — Admin panel</title>
+<meta name="theme-color" content="#241307">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --espresso: #241307;
+  --espresso-2: #2f1a0c;
+  --panel: #2c190d;
+  --panel-2: #36200f;
+  --crema: #F4E9D6;
+  --crema-dim: #B9A687;
+  --paper: #FAF3E6;
+  --terracotta: #B8462B;
+  --terracotta-light: #D26644;
+  --gold: #C9974C;
+  --green: #6FA77A;
+  --red: #C75A4A;
+  --line: rgba(244,233,214,0.12);
+  --ff-display: 'Fraunces', serif;
+  --ff-body: 'Outfit', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:var(--espresso); color:var(--crema); font-family:var(--ff-body);
+  min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+button{ font-family:inherit; }
+input, select, textarea{ font-family:inherit; }
+
+/* ============ LOGIN SCREEN ============ */
+.login-screen{
+  position:fixed; inset:0; z-index:100;
+  display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 30% 20%, rgba(184,70,43,0.18), transparent 50%), var(--espresso);
+  padding:24px;
+}
+.login-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:38px 30px;
+  width:100%; max-width:340px;
+  text-align:center;
+  box-shadow:0 30px 70px -20px rgba(0,0,0,0.5);
+  animation: card-in .5s cubic-bezier(.2,.8,.3,1.2) both;
+}
+@keyframes card-in{ from{opacity:0; transform:translateY(16px) scale(0.97);} to{opacity:1; transform:translateY(0) scale(1);} }
+.login-flower{ width:46px; height:46px; margin:0 auto 14px; animation:breathe 4s ease-in-out infinite; }
+@keyframes breathe{ 0%,100%{transform:scale(1) rotate(0deg);} 50%{transform:scale(1.08) rotate(6deg);} }
+.login-title{ font-family:var(--ff-display); font-weight:700; font-size:1.4rem; color:var(--paper); }
+.login-sub{ font-size:0.8rem; color:var(--crema-dim); margin-top:4px; margin-bottom:24px; }
+.pin-dots{ display:flex; gap:12px; justify-content:center; margin-bottom:22px; }
+.pin-dot{
+  width:14px; height:14px; border-radius:50%;
+  border:1.5px solid var(--gold); background:transparent;
+  transition:all .2s ease;
+}
+.pin-dot.filled{ background:var(--gold); box-shadow:0 0 10px rgba(201,151,76,0.6); }
+.pin-dot.error{ border-color:var(--red); animation:shake .4s ease; }
+@keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+.pin-pad{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;
+  margin-bottom:8px;
+}
+.pin-key{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:12px;
+  color:var(--paper); font-size:1.2rem; font-weight:600; padding:16px 0;
+  cursor:pointer; transition:all .15s ease;
+}
+.pin-key:hover{ background:rgba(201,151,76,0.15); border-color:var(--gold); }
+.pin-key:active{ transform:scale(0.92); }
+.pin-key.action{ color:var(--gold); font-size:0.95rem; }
+.login-hint{ font-size:0.72rem; color:var(--crema-dim); opacity:0.6; margin-top:16px; }
+input#pinInputReal{ position:absolute; opacity:0; pointer-events:none; }
+
+/* ============ APP SHELL ============ */
+.app{ display:none; min-height:100vh; }
+.app.show{ display:block; }
+
+.topbar{
+  position:sticky; top:0; z-index:40;
+  background:rgba(36,19,7,0.92); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px;
+  gap:12px;
+}
+.topbar-left{ display:flex; align-items:center; gap:10px; }
+.topbar-logo{ width:26px; height:26px; }
+.topbar-title{ font-family:var(--ff-display); font-weight:600; font-size:1.05rem; color:var(--paper); }
+.topbar-title small{ display:block; font-family:var(--ff-body); font-size:0.65rem; color:var(--gold); letter-spacing:0.1em; text-transform:uppercase; font-weight:500; }
+.topbar-actions{ display:flex; gap:8px; align-items:center; }
+
+.btn{
+  font-size:0.82rem; font-weight:600; padding:9px 16px; border-radius:10px;
+  border:1px solid var(--line); background:var(--panel-2); color:var(--paper);
+  cursor:pointer; transition:all .15s ease; display:inline-flex; align-items:center; gap:6px;
+}
+.btn:hover{ border-color:var(--gold); transform:translateY(-1px); }
+.btn:active{ transform:scale(0.96); }
+.btn-primary{ background:var(--terracotta); border-color:var(--terracotta); }
+.btn-primary:hover{ background:var(--terracotta-light); border-color:var(--terracotta-light); }
+.btn-ghost{ background:transparent; }
+.btn-danger{ color:var(--red); }
+.btn-danger:hover{ border-color:var(--red); }
+.btn-sm{ font-size:0.72rem; padding:6px 11px; border-radius:8px; }
+.btn svg{ width:14px; height:14px; }
+
+.toast-host{ position:fixed; top:18px; right:18px; z-index:200; display:flex; flex-direction:column; gap:10px; }
+.toast{
+  background:var(--panel-2); border:1px solid var(--gold); color:var(--paper);
+  padding:12px 18px; border-radius:10px; font-size:0.84rem; font-weight:500;
+  box-shadow:0 10px 30px -8px rgba(0,0,0,0.5);
+  animation: toast-in .3s ease both, toast-out .3s ease 2.4s both;
+  display:flex; align-items:center; gap:8px;
+}
+.toast.error{ border-color:var(--red); }
+@keyframes toast-in{ from{opacity:0; transform:translateX(30px);} to{opacity:1; transform:translateX(0);} }
+@keyframes toast-out{ to{opacity:0; transform:translateX(30px);} }
+
+main.app-main{ max-width:920px; margin:0 auto; padding:24px 20px 100px; }
+
+.stats-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:26px; }
+.stat-card{
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px;
+}
+.stat-num{ font-family:var(--ff-display); font-size:1.7rem; font-weight:700; color:var(--gold); }
+.stat-label{ font-size:0.72rem; color:var(--crema-dim); margin-top:2px; text-transform:uppercase; letter-spacing:0.06em; }
+
+.section-bar{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px; gap:10px; flex-wrap:wrap;
+}
+.section-bar h2{ font-family:var(--ff-display); font-size:1.15rem; color:var(--paper); font-weight:600; }
+
+.cat-list{ display:flex; flex-direction:column; gap:10px; }
+.cat-card{
+  background:var(--panel); border:1px solid var(--line); border-radius:14px;
+  overflow:hidden; transition:border-color .2s ease;
+}
+.cat-card.dragging{ opacity:0.5; }
+.cat-head{
+  display:flex; align-items:center; gap:10px; padding:14px 16px;
+  cursor:pointer;
+}
+.cat-drag{ cursor:grab; color:var(--crema-dim); flex-shrink:0; touch-action:none; }
+.cat-drag svg{ width:16px; height:16px; }
+.cat-icon-badge{
+  width:34px; height:34px; border-radius:9px; background:var(--terracotta);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.cat-icon-badge svg{ width:18px; height:18px; stroke:var(--paper); fill:none; }
+.cat-head-text{ flex:1; min-width:0; }
+.cat-name{ font-family:var(--ff-display); font-weight:600; font-size:1rem; color:var(--paper); }
+.cat-meta{ font-size:0.72rem; color:var(--crema-dim); margin-top:1px; }
+.cat-chevron{ width:18px; height:18px; color:var(--crema-dim); transition:transform .25s ease; flex-shrink:0; }
+.cat-card.open .cat-chevron{ transform:rotate(180deg); }
+.cat-actions{ display:flex; gap:6px; flex-shrink:0; }
+
+.cat-body{
+  max-height:0; overflow:hidden; transition:max-height .35s ease;
+  border-top:1px solid var(--line);
+}
+.cat-card.open .cat-body{ max-height:2400px; }
+.cat-body-inner{ padding:14px 16px 18px; }
+
+.cat-edit-row{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.field{ display:flex; flex-direction:column; gap:5px; flex:1; min-width:120px; }
+.field label{ font-size:0.68rem; color:var(--crema-dim); text-transform:uppercase; letter-spacing:0.05em; }
+.field input, .field select{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+  color:var(--paper); padding:9px 11px; font-size:0.85rem; outline:none;
+  transition:border-color .15s ease;
+}
+.field input:focus, .field select:focus{ border-color:var(--gold); }
+
+.item-row{
+  display:grid; grid-template-columns:1fr 90px 90px 36px; gap:8px;
+  align-items:center; padding:8px 0; border-bottom:1px solid var(--line);
+}
+.item-row:last-child{ border-bottom:none; }
+.item-row input{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+  color:var(--paper); padding:8px 10px; font-size:0.84rem; outline:none; width:100%;
+  transition:border-color .15s ease;
+}
+.item-row input:focus{ border-color:var(--gold); }
+.item-row input.price{ font-family:var(--ff-display); font-weight:600; color:var(--gold); }
+.item-del{
+  width:32px; height:32px; border-radius:8px; border:1px solid var(--line);
+  background:transparent; color:var(--red); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all .15s ease;
+}
+.item-del:hover{ background:rgba(199,90,74,0.15); border-color:var(--red); }
+.item-del svg{ width:14px; height:14px; }
+
+.add-item-btn{
+  width:100%; margin-top:8px; padding:10px; border-radius:9px;
+  border:1.5px dashed var(--line); background:transparent; color:var(--crema-dim);
+  font-size:0.82rem; font-weight:500; cursor:pointer; transition:all .15s ease;
+}
+.add-item-btn:hover{ border-color:var(--gold); color:var(--gold); }
+
+.icon-picker{ display:flex; gap:6px; flex-wrap:wrap; }
+.icon-opt{
+  width:34px; height:34px; border-radius:8px; border:1.5px solid var(--line);
+  background:var(--panel-2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .15s ease;
+}
+.icon-opt svg{ width:16px; height:16px; stroke:var(--crema-dim); fill:none; }
+.icon-opt.selected{ border-color:var(--gold); background:rgba(201,151,76,0.15); }
+.icon-opt.selected svg{ stroke:var(--gold); }
+
+.empty-cats{
+  text-align:center; padding:50px 20px; color:var(--crema-dim);
+  border:1.5px dashed var(--line); border-radius:14px; font-size:0.88rem;
+}
+
+.add-cat-card{
+  border:1.5px dashed var(--line); border-radius:14px; padding:16px;
+  margin-top:14px;
+}
+.add-cat-card h3{ font-size:0.9rem; color:var(--paper); margin-bottom:12px; font-family:var(--ff-display); }
+
+.footer-bar{
+  text-align:center; padding:30px 0 10px; color:var(--crema-dim); font-size:0.72rem; opacity:0.55;
+}
+
+.unsaved-badge{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:0.7rem; color:var(--gold); background:rgba(201,151,76,0.12);
+  padding:4px 10px; border-radius:100px; border:1px solid rgba(201,151,76,0.3);
+}
+.unsaved-dot{ width:6px; height:6px; border-radius:50%; background:var(--gold); animation:pulse-dot 1.4s ease-in-out infinite; }
+@keyframes pulse-dot{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+.confirm-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:150;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  opacity:0; pointer-events:none; transition:opacity .2s ease;
+}
+.confirm-overlay.show{ opacity:1; pointer-events:auto; }
+.confirm-card{
+  background:var(--panel); border:1px solid var(--line); border-radius:16px;
+  padding:24px; max-width:340px; width:100%; text-align:center;
+  transform:scale(0.9); transition:transform .2s ease;
+}
+.confirm-overlay.show .confirm-card{ transform:scale(1); }
+.confirm-card p{ font-size:0.9rem; color:var(--crema); margin:10px 0 18px; line-height:1.4; }
+.confirm-card .confirm-actions{ display:flex; gap:8px; justify-content:center; }
+
+@media (max-width:560px){
+  .stats-row{ grid-template-columns:1fr 1fr; }
+  .stats-row .stat-card:last-child{ grid-column:span 2; }
+  .topbar-title small{ display:none; }
+  .item-row{ grid-template-columns:1fr 70px 70px 32px; gap:6px; }
+  .item-row input{ font-size:0.78rem; padding:7px 8px; }
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN (PIN) ===== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <svg class="login-flower" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <g fill="#C9974C">
+        <ellipse cx="50" cy="22" rx="11" ry="20"/><ellipse cx="50" cy="78" rx="11" ry="20"/>
+        <ellipse cx="22" cy="50" rx="20" ry="11"/><ellipse cx="78" cy="50" rx="20" ry="11"/>
+        <ellipse cx="35" cy="35" rx="8" ry="13" transform="rotate(45 35 35)"/>
+        <ellipse cx="65" cy="35" rx="8" ry="13" transform="rotate(-45 65 35)"/>
+        <ellipse cx="35" cy="65" rx="8" ry="13" transform="rotate(-45 35 65)"/>
+        <ellipse cx="65" cy="65" rx="8" ry="13" transform="rotate(45 65 65)"/>
+        <circle cx="50" cy="50" r="6" fill="#241307"/>
+      </g>
+    </svg>
+    <div class="login-title">Sredami Admin</div>
+    <div class="login-sub">Unesi PIN za pristup</div>
+
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+
+    <div class="pin-pad" id="pinPad">
+      <button class="pin-key" data-k="1">1</button>
+      <button class="pin-key" data-k="2">2</button>
+      <button class="pin-key" data-k="3">3</button>
+      <button class="pin-key" data-k="4">4</button>
+      <button class="pin-key" data-k="5">5</button>
+      <button class="pin-key" data-k="6">6</button>
+      <button class="pin-key" data-k="7">7</button>
+      <button class="pin-key" data-k="8">8</button>
+      <button class="pin-key" data-k="9">9</button>
+      <button class="pin-key action" data-k="reset">Obriši</button>
+      <button class="pin-key" data-k="0">0</button>
+      <button class="pin-key action" data-k="back">⌫</button>
+    </div>
+    <div class="login-hint">Podrazumevani PIN: 2024 — promeni ga u kodu pre upotrebe</div>
+  </div>
+</div>
+
+<!-- ===== ADMIN APP ===== -->
+<div class="app" id="app">
+  <div class="toast-host" id="toastHost"></div>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <svg class="topbar-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#C9974C">
+          <ellipse cx="50" cy="22" rx="11" ry="20"/><ellipse cx="50" cy="78" rx="11" ry="20"/>
+          <ellipse cx="22" cy="50" rx="20" ry="11"/><ellipse cx="78" cy="50" rx="20" ry="11"/>
+          <ellipse cx="35" cy="35" rx="8" ry="13" transform="rotate(45 35 35)"/>
+          <ellipse cx="65" cy="35" rx="8" ry="13" transform="rotate(-45 65 35)"/>
+          <ellipse cx="35" cy="65" rx="8" ry="13" transform="rotate(-45 35 65)"/>
+          <ellipse cx="65" cy="65" rx="8" ry="13" transform="rotate(45 65 65)"/>
+          <circle cx="50" cy="50" r="6" fill="#241307"/>
+        </g>
+      </svg>
+      <div class="topbar-title">Sredami<small>Admin panel</small></div>
+    </div>
+    <div class="topbar-actions">
+      <span class="unsaved-badge" id="unsavedBadge" style="display:none;"><span class="unsaved-dot"></span>Čuva se...</span>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Odjava</button>
+    </div>
+  </div>
+
+  <main class="app-main">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="statCats">0</div><div class="stat-label">Kategorija</div></div>
+      <div class="stat-card"><div class="stat-num" id="statItems">0</div><div class="stat-label">Stavki</div></div>
+      <div class="stat-card"><div class="stat-num" id="statAvg">0</div><div class="stat-label">Prosečna cena (RSD)</div></div>
+    </div>
+
+    <div class="section-bar">
+      <h2>Kategorije i pića</h2>
+      <button class="btn btn-primary btn-sm" id="addCatBtn">+ Nova kategorija</button>
+    </div>
+
+    <div class="cat-list" id="catList"></div>
+
+    <div class="empty-cats" id="emptyState" style="display:none;">
+      Nema kategorija. Dodaj prvu da kreneš.
+    </div>
+
+    <div class="footer-bar">Sredami café &amp; bar · admin · promene se odmah vide na javnom meniju</div>
+  </main>
+</div>
+
+<!-- ===== CONFIRM DIALOG ===== -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-card">
+    <div style="font-family:'Fraunces',serif; font-weight:600; color:#FAF3E6; font-size:1.05rem;" id="confirmTitle">Da li si siguran?</div>
+    <p id="confirmText">Ova akcija se ne može opozvati.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost btn-sm" id="confirmCancel">Otkaži</button>
+      <button class="btn btn-danger btn-sm" id="confirmOk" style="background:#C75A4A; color:#FAF3E6; border-color:#C75A4A;">Obriši</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN_PIN = '2024'; // <-- promeni ovaj PIN pre nego sto podelis link s bilo kim
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCC5NzGADF4sJVzk64UTS5Ov-Kalr4QwnY",
+  authDomain: "sredami-meni.firebaseapp.com",
+  databaseURL: "https://sredami-meni-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "sredami-meni",
+  storageBucket: "sredami-meni.firebasestorage.app",
+  messagingSenderId: "891923195374",
+  appId: "1:891923195374:web:f66ee12da916873652daff"
+};
+
+function getDb(){
+  if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  return firebase.database();
+}
+
+const ICONS = {
+  coffee: { label:'Kafa', path:'<path d="M4 9h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V9z"/><path d="M17 10h2a2 2 0 0 1 0 4h-2"/><path d="M7 2c0 1.5 1.5 1.5 1.5 3S7 6.5 7 8M11 2c0 1.5 1.5 1.5 1.5 3S11 6.5 11 8"/>' },
+  soda: { label:'Soda', path:'<path d="M7 3h10l-1 17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2L7 3z"/><path d="M7.5 8h9M7.8 13h8.4"/>' },
+  juice: { label:'Sok', path:'<path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/>' },
+  water: { label:'Voda', path:'<path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/><path d="M9.5 14a2.5 2.5 0 0 0 2.5 2.5"/>' },
+  beer: { label:'Pivo', path:'<path d="M5 8h11v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8z"/><path d="M16 10h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><path d="M5 8c0-2 1-4 1-4M9 4s-1 2-1 4M13 4s1 2 0 4"/>' },
+  wine: { label:'Vino', path:'<path d="M8 2h8l-1 9a3 3 0 0 1-6 0L8 2z"/><path d="M12 16v6M9 22h6"/>' },
+  cocktail: { label:'Koktel', path:'<path d="M5 5h14l-7 8v7M9 20h6"/><path d="M3 5l2-2M21 5l-2-2"/>' },
+  brandy: { label:'Rakija', path:'<path d="M9 2h6v5l4 4v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9l4-4V2z"/><path d="M9 2h6"/>' },
+  spirit: { label:'Žestoko', path:'<path d="M5 5h14l-7 8v7M9 20h6M9 5l1.5 3M15 5l-1.5 3"/>' },
+  generic: { label:'Ostalo', path:'<path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/>' }
+};
+
+const DEFAULT_DATA = {
+  categories: [
+    { id:'kafa', name:'Kafa i topli napici', subtitle:'Sveže mlevena, svaki dan', icon:'coffee', items:[
+      {name:'Domaća kafa', price:120},
+      {name:'Domaća kafa sa mlekom', price:140},
+      {name:'Espresso', price:140},
+      {name:'Espresso sa mlekom', price:160},
+      {name:'Macchiato', price:160},
+      {name:'Cappucino', price:180},
+      {name:'Americano', price:150},
+      {name:'Espresso sa sojinim mlekom', price:180},
+      {name:'Nescafe', price:190},
+      {name:'Čaj Milford', price:150},
+      {name:'Topla čokolada', price:220}
+    ]},
+    { id:'gazirana', name:'Gazirana pića', subtitle:'Osvežavajuće', icon:'soda', items:[
+      {name:'Pepsi', vol:'250 ml', price:200},
+      {name:'Pepsi zero', vol:'250 ml', price:200},
+      {name:'Mirinda', vol:'250 ml', price:200},
+      {name:'7up', vol:'250 ml', price:200},
+      {name:'Evervess bitter', vol:'250 ml', price:200},
+      {name:'Evervess tonic', vol:'250 ml', price:200},
+      {name:'Cockta', vol:'275 ml', price:200},
+      {name:'Kvas', vol:'330 ml', price:200},
+      {name:'Guarana', vol:'250 ml', price:200}
+    ]},
+    { id:'negazirana', name:'Negazirana pića', subtitle:'Sokovi i limunade', icon:'juice', items:[
+      {name:'Gusto sokovi', vol:'200 ml', price:200, note:'Jabuka · Jagoda · Breskva · Pomorandža · Borovnica'},
+      {name:'Cedevita ukusi', vol:'250 ml', price:180},
+      {name:'Limunada', vol:'300 ml', price:190},
+      {name:'Limunada ukusi', vol:'300 ml', price:250},
+      {name:'Ceđena pomorandža', vol:'250 ml', price:300}
+    ]},
+    { id:'vode', name:'Vode', subtitle:'Negazirana & ledeni čaj', icon:'water', items:[
+      {name:'Knjaz Miloš', vol:'1000 ml', price:300},
+      {name:'Knjaz Miloš', vol:'250 ml', price:150},
+      {name:'Aqua Viva', vol:'330 ml', price:150},
+      {name:'Knjaz Miloš limun', vol:'330 ml', price:180},
+      {name:'Knjaz Miloš pomorandža', vol:'330 ml', price:180},
+      {name:'Malina', vol:'300 ml', price:240, subgroup:'Domaći ledeni čaj · Monin'},
+      {name:'Tropsko voće', vol:'300 ml', price:240, subgroup:'Domaći ledeni čaj · Monin'},
+      {name:'Lubenica', vol:'300 ml', price:240, subgroup:'Domaći ledeni čaj · Monin'}
+    ]},
+    { id:'piva', name:'Piva', subtitle:'Pivo, točeno i flaša', icon:'beer', items:[
+      {name:'Birra Moretti točeno', vol:'500 ml', price:220},
+      {name:'Birra Moretti točeno', vol:'250 ml', price:160},
+      {name:'Heineken', vol:'400 ml', price:210},
+      {name:'Heineken', vol:'250 ml', price:280},
+      {name:'Zaječarsko', vol:'500 ml', price:180},
+      {name:'Zaječarsko', vol:'330 ml', price:200},
+      {name:'Birra Moretti', vol:'330 ml', price:210}
+    ]},
+    { id:'vina', name:'Vina', subtitle:'Belo · crveno · roze', icon:'wine', items:[
+      {name:'Tikveš Smederevka', vol:'750 ml', price:1500, subgroup:'Belo'},
+      {name:'Tikveš Smederevka', vol:'1000 ml', price:1000, subgroup:'Belo'},
+      {name:'Plantaže Chardonnay', vol:'187 ml', price:400, subgroup:'Belo'},
+      {name:'Plantaže Vranac', vol:'750 ml', price:1500, subgroup:'Crveno'},
+      {name:'Plantaže Vranac', vol:'187 ml', price:400, subgroup:'Crveno'},
+      {name:'Tikveš Rose', vol:'750 ml', price:1500, subgroup:'Roze'},
+      {name:'Tikveš Rose', vol:'1000 ml', price:1000, subgroup:'Roze'},
+      {name:'Plantaže Rose', vol:'187 ml', price:400, subgroup:'Roze'},
+      {name:"Somersby ukusi", vol:'330 ml', price:300, subgroup:'Roze'}
+    ]},
+    { id:'kokteli', name:'Kokteli', subtitle:'Signature mix', icon:'cocktail', items:[
+      {name:'Sex on the Beach', price:470},
+      {name:'Blue Lagoon', price:470},
+      {name:'Long Island Iced Tea', price:470},
+      {name:'Alexandria', price:470},
+      {name:"Devil's Ice Tea", price:630}
+    ]},
+    { id:'rakije', name:'Rakije', subtitle:'Domaća priča, čašica po čašica', icon:'brandy', items:[
+      {name:'Zlatna Biserka', vol:'30 ml', price:130},
+      {name:'Kablarska Kraljica', vol:'30 ml', price:190},
+      {name:'Plazinić 3 godine', vol:'30 ml', price:300},
+      {name:'Vesić kajsija', vol:'30 ml', price:170},
+      {name:'Vesić dunja', vol:'30 ml', price:170},
+      {name:'Takovo viljamovka', vol:'30 ml', price:210},
+      {name:'Meduška', vol:'30 ml', price:180},
+      {name:'Malina', vol:'30 ml', price:180}
+    ]},
+    { id:'zestoka', name:'Žestoka pića', subtitle:'Viski · vodka · džin', icon:'spirit', items:[
+      {name:'Vodka Baltic', vol:'30 ml', price:140},
+      {name:'Vodka Smirnoff Red', vol:'30 ml', price:190},
+      {name:'Gin', vol:'30 ml', price:150},
+      {name:'Tequila Sierra', vol:'30 ml', price:250},
+      {name:'Vinjak Rubin', vol:'30 ml', price:140},
+      {name:'Gorki List', vol:'50 ml', price:190},
+      {name:"Ballantine's", vol:'30 ml', price:220},
+      {name:'Johnnie Walker Red Label', vol:'30 ml', price:220},
+      {name:'Jameson', vol:'30 ml', price:250}
+    ]}
+  ]
+}; // seeded to match the public menu's defaults so admin never starts from an empty menu
+
+let menuData = null;
+let saveTimer = null;
+let openCatId = null;
+
+/* ============ PIN LOGIN ============ */
+let pinBuffer = '';
+const pinDotsEl = document.getElementById('pinDots');
+const loginScreen = document.getElementById('loginScreen');
+const app = document.getElementById('app');
+
+document.getElementById('pinPad').addEventListener('click', (e) => {
+  const btn = e.target.closest('.pin-key');
+  if(!btn) return;
+  const k = btn.dataset.k;
+  if(k === 'reset'){ pinBuffer = ''; renderPinDots(); return; }
+  if(k === 'back'){ pinBuffer = pinBuffer.slice(0,-1); renderPinDots(); return; }
+  if(pinBuffer.length < 4){
+    pinBuffer += k;
+    renderPinDots();
+    if(pinBuffer.length === 4){ setTimeout(checkPin, 150); }
+  }
+});
+
+function renderPinDots(){
+  const dots = pinDotsEl.querySelectorAll('.pin-dot');
+  dots.forEach((d,i) => d.classList.toggle('filled', i < pinBuffer.length));
+}
+
+function checkPin(){
+  if(pinBuffer === ADMIN_PIN){
+    sessionStorage.setItem('sredami_admin_ok', '1');
+    enterApp();
+  }else{
+    pinDotsEl.querySelectorAll('.pin-dot').forEach(d => d.classList.add('error'));
+    setTimeout(() => {
+      pinDotsEl.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('error'));
+      pinBuffer = '';
+      renderPinDots();
+    }, 420);
+  }
+}
+
+function enterApp(){
+  loginScreen.style.display = 'none';
+  app.classList.add('show');
+  bootAdmin();
+}
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem('sredami_admin_ok');
+  location.reload();
+});
+
+if(sessionStorage.getItem('sredami_admin_ok') === '1'){
+  enterApp();
+}
+
+/* ============ TOAST ============ */
+function toast(msg, isError){
+  const host = document.getElementById('toastHost');
+  const t = document.createElement('div');
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.textContent = msg;
+  host.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+
+/* ============ STORAGE ============ */
+async function loadData(){
+  try{
+    const db = getDb();
+    const snap = await db.ref('menu').get();
+    if(snap.exists()) return { data: snap.val(), wasEmpty:false };
+  }catch(e){ console.warn('Firebase load error:', e); }
+  return { data: JSON.parse(JSON.stringify(DEFAULT_DATA)), wasEmpty:true };
+}
+
+function scheduleSave(){
+  document.getElementById('unsavedBadge').style.display = 'inline-flex';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveData, 700);
+}
+
+async function saveData(){
+  try{
+    menuData.updatedAt = new Date().toISOString();
+    const db = getDb();
+    await db.ref('menu').set(menuData);
+    document.getElementById('unsavedBadge').style.display = 'none';
+    toast('Sacuvano ✓');
+  }catch(e){
+    toast('Greska: ' + e.message, true);
+    console.error(e);
+  }
+}
+
+/* ============ CONFIRM DIALOG ============ */
+function confirmDialog(title, text){
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('confirmOverlay');
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmText').textContent = text;
+    overlay.classList.add('show');
+    function cleanup(result){
+      overlay.classList.remove('show');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      resolve(result);
+    }
+    const okBtn = document.getElementById('confirmOk');
+    const cancelBtn = document.getElementById('confirmCancel');
+    function onOk(){ cleanup(true); }
+    function onCancel(){ cleanup(false); }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+  });
+}
+
+/* ============ RENDER ============ */
+function iconSvg(key, extra){
+  const icon = ICONS[key] || ICONS.generic;
+  return `<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra||''}>${icon.path}</svg>`;
+}
+
+function uid(){ return 'id' + Math.random().toString(36).slice(2,10); }
+
+function updateStats(){
+  const cats = menuData.categories || [];
+  let itemCount = 0, priceSum = 0;
+  cats.forEach(c => (c.items||[]).forEach(i => { itemCount++; priceSum += Number(i.price)||0; }));
+  document.getElementById('statCats').textContent = cats.length;
+  document.getElementById('statItems').textContent = itemCount;
+  document.getElementById('statAvg').textContent = itemCount ? Math.round(priceSum/itemCount) : 0;
+}
+
+function renderCats(){
+  const list = document.getElementById('catList');
+  const empty = document.getElementById('emptyState');
+  list.innerHTML = '';
+  const cats = menuData.categories || [];
+  empty.style.display = cats.length ? 'none' : 'block';
+
+  cats.forEach((cat, catIdx) => {
+    const card = document.createElement('div');
+    card.className = 'cat-card' + (openCatId === cat.id ? ' open' : '');
+    card.dataset.id = cat.id;
+    card.draggable = true;
+
+    const itemsHtml = (cat.items||[]).map((item, i) => `
+      <div class="item-row" data-idx="${i}">
+        <input type="text" value="${escAttr(item.name)}" placeholder="Naziv pića" data-field="name">
+        <input type="text" value="${escAttr(item.vol||'')}" placeholder="ml" data-field="vol">
+        <input type="number" class="price" value="${item.price}" placeholder="0" data-field="price">
+        <button class="item-del" data-action="del-item" title="Obriši stavku">
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+        </button>
+      </div>
+    `).join('');
+
+    const iconOptions = Object.keys(ICONS).map(key => `
+      <div class="icon-opt ${cat.icon === key ? 'selected' : ''}" data-icon="${key}" title="${ICONS[key].label}">
+        ${iconSvg(key)}
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="cat-head" data-action="toggle">
+        <div class="cat-drag" data-action="drag-handle" title="Prevuci da promeniš redosled">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.4"/><circle cx="16" cy="6" r="1.4"/><circle cx="8" cy="12" r="1.4"/><circle cx="16" cy="12" r="1.4"/><circle cx="8" cy="18" r="1.4"/><circle cx="16" cy="18" r="1.4"/></svg>
+        </div>
+        <div class="cat-icon-badge">${iconSvg(cat.icon)}</div>
+        <div class="cat-head-text">
+          <div class="cat-name">${escHtml(cat.name) || 'Bez naziva'}</div>
+          <div class="cat-meta">${(cat.items||[]).length} stavki</div>
+        </div>
+        <div class="cat-actions">
+          <button class="btn btn-sm btn-danger" data-action="del-cat" title="Obriši kategoriju">
+            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+          </button>
+        </div>
+        <svg class="cat-chevron" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="cat-body">
+        <div class="cat-body-inner">
+          <div class="cat-edit-row">
+            <div class="field" style="flex:2;">
+              <label>Naziv kategorije</label>
+              <input type="text" value="${escAttr(cat.name)}" data-field="cat-name">
+            </div>
+            <div class="field" style="flex:2;">
+              <label>Podnaslov</label>
+              <input type="text" value="${escAttr(cat.subtitle||'')}" data-field="cat-subtitle">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:14px;">
+            <label>Ikonica</label>
+            <div class="icon-picker">${iconOptions}</div>
+          </div>
+          <div class="field" style="margin-bottom:6px;">
+            <label>Pića u ovoj kategoriji</label>
+          </div>
+          <div class="items-wrap">${itemsHtml}</div>
+          <button class="add-item-btn" data-action="add-item">+ Dodaj piće</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  updateStats();
+}
+
+function escHtml(s){ const d = document.createElement('div'); d.textContent = s==null?'':String(s); return d.innerHTML; }
+function escAttr(s){ return escHtml(s).replace(/"/g, '&quot;'); }
+
+/* ============ EVENT DELEGATION ============ */
+document.getElementById('catList').addEventListener('click', async (e) => {
+  const card = e.target.closest('.cat-card');
+  if(!card) return;
+  const catId = card.dataset.id;
+  const cat = (menuData.categories||[]).find(c => c.id === catId);
+  if(!cat) return;
+
+  const toggle = e.target.closest('[data-action="toggle"]');
+  const delCat = e.target.closest('[data-action="del-cat"]');
+  const addItem = e.target.closest('[data-action="add-item"]');
+  const delItem = e.target.closest('[data-action="del-item"]');
+  const iconOpt = e.target.closest('.icon-opt');
+
+  if(delCat){
+    e.stopPropagation();
+    const ok = await confirmDialog('Obriši kategoriju?', `"${cat.name}" i svih ${(cat.items||[]).length} stavki će biti trajno obrisano.`);
+    if(ok){
+      menuData.categories = menuData.categories.filter(c => c.id !== catId);
+      renderCats(); scheduleSave();
+      toast('Kategorija obrisana');
+    }
+    return;
+  }
+
+  if(delItem){
+    e.stopPropagation();
+    const row = delItem.closest('.item-row');
+    const idx = Number(row.dataset.idx);
+    cat.items.splice(idx, 1);
+    renderCats();
+    openCatId = catId;
+    document.querySelector(`.cat-card[data-id="${catId}"]`)?.classList.add('open');
+    scheduleSave();
+    return;
+  }
+
+  if(addItem){
+    e.stopPropagation();
+    cat.items = cat.items || [];
+    cat.items.push({ name:'', vol:'', price:0 });
+    openCatId = catId;
+    renderCats();
+    document.querySelector(`.cat-card[data-id="${catId}"]`)?.classList.add('open');
+    const rows = document.querySelectorAll(`.cat-card[data-id="${catId}"] .item-row`);
+    const last = rows[rows.length-1];
+    last?.querySelector('input[data-field="name"]')?.focus();
+    return;
+  }
+
+  if(iconOpt){
+    e.stopPropagation();
+    cat.icon = iconOpt.dataset.icon;
+    renderCats();
+    openCatId = catId;
+    document.querySelector(`.cat-card[data-id="${catId}"]`)?.classList.add('open');
+    scheduleSave();
+    return;
+  }
+
+  if(toggle){
+    openCatId = (openCatId === catId) ? null : catId;
+    renderCats();
+  }
+});
+
+document.getElementById('catList').addEventListener('input', (e) => {
+  const card = e.target.closest('.cat-card');
+  if(!card) return;
+  const catId = card.dataset.id;
+  const cat = (menuData.categories||[]).find(c => c.id === catId);
+  if(!cat) return;
+
+  const field = e.target.dataset.field;
+  if(field === 'cat-name'){ cat.name = e.target.value; }
+  else if(field === 'cat-subtitle'){ cat.subtitle = e.target.value; }
+  else{
+    const row = e.target.closest('.item-row');
+    if(row){
+      const idx = Number(row.dataset.idx);
+      const item = cat.items[idx];
+      if(!item) return;
+      if(field === 'price'){ item.price = Number(e.target.value) || 0; }
+      else if(field === 'name'){ item.name = e.target.value; }
+      else if(field === 'vol'){ item.vol = e.target.value; }
+    }
+  }
+  // update header text live without full re-render (avoid losing focus)
+  if(field === 'cat-name'){
+    card.querySelector('.cat-name').textContent = cat.name || 'Bez naziva';
+  }
+  if(field === 'name' || field === 'cat-name'){
+    // no full re-render needed
+  }
+  scheduleSave();
+});
+
+/* ============ ADD CATEGORY ============ */
+document.getElementById('addCatBtn').addEventListener('click', () => {
+  menuData.categories = menuData.categories || [];
+  const newCat = { id: uid(), name:'Nova kategorija', subtitle:'', icon:'generic', items:[] };
+  menuData.categories.push(newCat);
+  openCatId = newCat.id;
+  renderCats();
+  document.querySelector(`.cat-card[data-id="${newCat.id}"]`)?.classList.add('open');
+  document.querySelector(`.cat-card[data-id="${newCat.id}"]`)?.scrollIntoView({behavior:'smooth', block:'center'});
+  setTimeout(() => {
+    document.querySelector(`.cat-card[data-id="${newCat.id}"] input[data-field="cat-name"]`)?.focus();
+  }, 100);
+  scheduleSave();
+});
+
+/* ============ DRAG TO REORDER ============ */
+let dragSrcId = null;
+document.getElementById('catList').addEventListener('dragstart', (e) => {
+  const card = e.target.closest('.cat-card');
+  if(!card) return;
+  dragSrcId = card.dataset.id;
+  card.classList.add('dragging');
+});
+document.getElementById('catList').addEventListener('dragend', (e) => {
+  const card = e.target.closest('.cat-card');
+  if(card) card.classList.remove('dragging');
+});
+document.getElementById('catList').addEventListener('dragover', (e) => {
+  e.preventDefault();
+  const card = e.target.closest('.cat-card');
+  if(!card || card.dataset.id === dragSrcId) return;
+  const rect = card.getBoundingClientRect();
+  const before = (e.clientY - rect.top) < rect.height/2;
+  card.parentNode.insertBefore(document.querySelector(`.cat-card[data-id="${dragSrcId}"]`), before ? card : card.nextSibling);
+});
+document.getElementById('catList').addEventListener('drop', (e) => {
+  e.preventDefault();
+  const newOrderIds = [...document.querySelectorAll('.cat-card')].map(c => c.dataset.id);
+  menuData.categories.sort((a,b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
+  scheduleSave();
+});
+
+/* ============ BOOT ============ */
+async function bootAdmin(){
+  const { data, wasEmpty } = await loadData();
+  menuData = data;
+  if(!menuData.categories) menuData.categories = [];
+  renderCats();
+  if(wasEmpty){
+    // First time ever opening admin: write the starting menu to shared storage
+    // so the public menu and this dashboard agree on the same data from now on.
+    await saveData();
+  }
+}
+</script>
+</body>
+</html>
